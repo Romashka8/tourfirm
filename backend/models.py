@@ -4,6 +4,14 @@ from sqlalchemy.orm import relationship
 from backend.database import Base
 
 
+class Admin(Base):
+    __tablename__ = "Admin"
+    __table_args__ = {"extend_existing": True}
+    
+    id = Column(Integer, primary_key=True, index=True)
+    login = Column(String(20), index=True)
+    password = Column(String(20), index=True)
+
 class Operator(Base):
     __tablename__ = "Operator"
     __table_args__ = {"extend_existing": True}
