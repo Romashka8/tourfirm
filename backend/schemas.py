@@ -1,5 +1,6 @@
 from pydantic import BaseModel, conint
 from typing import Optional
+from datetime import datetime
 
 
 class OperatorBase(BaseModel):
@@ -91,4 +92,34 @@ class Hotel(HotelBase):
 
 # Tour.
 class TourBase(BaseModel):
+    countryCode: str
+    priceForTour: int
+    tourStart: datetime
+    tourEnd: datetime
+    operatorId: int
+    hotelId: int
+
+
+class TourCreate(TourBase):
     pass
+
+
+class TourUpdate(BaseModel):
+    id: int
+    countryCode: Optional[str] = ""
+    priceForTour: Optional[int] = -1
+    tourStart: Optional[datetime] = None
+    tourEnd: Optional[datetime] = None
+    operatorId: Optional[int] = -1
+    hotelId: Optional[int] = -1
+
+
+class TourDelete(BaseModel):
+    id: int
+
+
+class Tour(TourBase):
+    id: int
+
+    class Config:
+        from_attributes = True

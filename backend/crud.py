@@ -97,3 +97,65 @@ def delete_hotel(db: Session, hotel_delete: schemas.HotelDelete):
         db.commit()
         return True
     return None
+
+
+# Tour.
+def get_tour_by_id(db: Session, tour_id: int):
+    return db.query(models.Tour).filter(models.Tour.id == tour_id).first()
+
+
+def get_tours_by_country_code(db: Session, country_code: str):
+    return db.query(models.Tour).filter(models.Tour.countryCode == country_code).all()
+
+
+def get_tours_by_operator_id(db: Session, operator_id: int):
+    return db.query(models.Tour).filter(models.Tour.operatorId == operator_id).all()
+
+
+def get_all_tours(db: Session):
+    return db.query(models.Tour).all()
+
+
+def create_tour(db: Session, tour: schemas.TourCreate):
+    if get_operator_by_id(db=db, operator_id=tour.operatorId) is not None and\
+        get_hotel_by_id(db=db, hotel_id=tour.hotelId) is not None: 
+        db_tour = models.Tour(
+            countryCode=tour.countryCode, tourStart=tour.tourStart,
+            tourEnd=tour.tourEnd, priceForTour=tour.priceForTour,
+            operatorId=tour.operatorId, hotelId=tour.hotelId
+            )
+        db.add(db_tour)
+        db.commit()
+        db.refresh(db_tour)
+        return db_tour
+    return None
+
+
+def update_tour(db: Session, tour_update: schemas.TourUpdate):
+    db_tour = get_tour_by_id(db=db, tour_id=tour_update.id)
+    if db_tour is not None:
+        if len(tour_update.countryCode) != 0:
+            db_tour.countryCode = tour_update.countryCode
+        if tour_update.priceForTour > 0:
+            db_tour.priceForTour = tour_update.priceForTour
+        if tour_update.tourStart is not None:
+            db_tour.tourStart = tour_update.tourStart
+        if tour_update.tourEnd is not None:
+            db_tour.tourEnd = tour_update.tourEnd
+        if get_operator_by_id(db=db, operator_id=tour_update.operatorId) is not None:
+            db_tour.operatorId = tour_update.operatorId
+        if get_hotel_by_id(db=db, hotel_id=tour_update.hotelId) is not None:
+            db_tour.hotelId = tour_update.hotelId
+        db.commit()
+        db.refresh(db_tour)
+        return db_tour
+    return None
+
+
+def delete_tour(db: Session, tour_delete: schemas.TourDelete):
+    db_tour = get_tour_by_id(db=db, tour_id=tour_delete.id)
+    if db_tour is not None:
+        db.delete(db_tour)
+        db.commit()
+        return True
+    return None

@@ -36,17 +36,17 @@ def navigation_route():
 
 
 # Operator API.
-@app.get("/operators/get_all", response_model=list[schemas.OperatorPrivate])
+@app.get("/operators/get_all", response_model=list[schemas.OperatorPrivate], tags=["operators"])
 def get_all_operators(db: Session = Depends(get_db)):
     return crud.get_all_operators(db=db)
 
 
-@app.post("/operators/create", response_model=schemas.OperatorPrivate)
+@app.post("/operators/create", response_model=schemas.OperatorPrivate, tags=["operators"])
 def create_operator(operator: schemas.OperatorCreate, db: Session = Depends(get_db)):
     return crud.create_operator(db=db, operator=operator)
 
 
-@app.post("/operators/update", response_model=schemas.OperatorPrivate)
+@app.post("/operators/update", response_model=schemas.OperatorPrivate, tags=["operators"])
 def update_operator(operator: schemas.OperatorUpdate, db: Session = Depends(get_db)):
     operator = crud.update_operator(db=db, operator_update=operator)
     if operator is None:
@@ -54,7 +54,7 @@ def update_operator(operator: schemas.OperatorUpdate, db: Session = Depends(get_
     return operator
 
 
-@app.post("/operators/delete")
+@app.post("/operators/delete", tags=["operators"])
 def delete_operator(operator_delete: schemas.OperatorDelete, db: Session = Depends(get_db)):
     res = crud.delete_operator(db=db, operator_delete=operator_delete)
     if res is None:
@@ -62,17 +62,17 @@ def delete_operator(operator_delete: schemas.OperatorDelete, db: Session = Depen
 
 
 # Hotels API.
-@app.get("/hotels/get_all", response_model=list[schemas.Hotel])
+@app.get("/hotels/get_all", response_model=list[schemas.Hotel], tags=["hotels"])
 def get_all_hotels(db: Session = Depends(get_db)):
     return crud.get_all_hotels(db=db)
 
 
-@app.post("/hotels/create", response_model=schemas.Hotel)
+@app.post("/hotels/create", response_model=schemas.Hotel, tags=["hotels"])
 def create_hotel(hotel: schemas.HotelCreate, db: Session = Depends(get_db)):
     return crud.create_hotel(db=db, hotel=hotel)
 
 
-@app.post("/hotels/update", response_model=schemas.Hotel)
+@app.post("/hotels/update", response_model=schemas.Hotel, tags=["hotels"])
 def update_operator(hotel: schemas.HotelUpdate, db: Session = Depends(get_db)):
     hotel = crud.update_hotel(db=db, hotel_update=hotel)
     if hotel is None:
@@ -80,8 +80,34 @@ def update_operator(hotel: schemas.HotelUpdate, db: Session = Depends(get_db)):
     return hotel
 
 
-@app.post("/hotels/delete")
+@app.post("/hotels/delete", tags=["hotels"])
 def delete_hotel(hotel_delete: schemas.HotelDelete, db: Session = Depends(get_db)):
     res = crud.delete_hotel(db=db, hotel_delete=hotel_delete)
+    if res is None:
+        raise HTTPException(status_code=404, detail="It is nothing to delete!")
+
+
+# Tours.
+@app.get("/tours/get_all", response_model=list[schemas.Tour], tags=["tours"])
+def get_all_tours(db: Session = Depends(get_db)):
+    return crud.get_all_tours(db=db)
+
+
+@app.post("/tours/create", response_model=schemas.Tour, tags=["tours"])
+def create_tour(tour: schemas.TourCreate, db: Session = Depends(get_db)):
+    return crud.create_tour(db=db, tour=tour)
+
+
+@app.post("/tours/update", response_model=schemas.Tour, tags=["tours"])
+def update_tour(tour: schemas.TourUpdate, db: Session = Depends(get_db)):
+    hotel = crud.update_tour(db=db, tour_update=tour)
+    if tour is None:
+        raise HTTPException(status_code=404, detail="It is nothing to update!")
+    return tour
+
+
+@app.post("/tours/delete", tags=["tours"])
+def delete_tour(tour_delete: schemas.TourDelete, db: Session = Depends(get_db)):
+    res = crud.delete_tour(db=db, tour_delete=tour_delete)
     if res is None:
         raise HTTPException(status_code=404, detail="It is nothing to delete!")
