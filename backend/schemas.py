@@ -17,8 +17,22 @@ class OperatorUpdate(OperatorBase):
     password: Optional[str] = ""
 
 
+class OperatorUpdateLogin(BaseModel):
+    id: int
+    login: str
+
+
+class OperatorUpdatePassword(BaseModel):
+    id: int
+    password: str
+
+
 class OperatorDelete(BaseModel):
     id: int
+
+
+class OperatorDeleteList(BaseModel):
+    id: list[int]
 
 
 class OperatorPrivate(OperatorBase):

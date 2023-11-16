@@ -54,11 +54,32 @@ def update_operator(operator: schemas.OperatorUpdate, db: Session = Depends(get_
     return operator
 
 
+@app.post("/operators/update_login", response_model=schemas.OperatorPrivate, tags=["operators"])
+def update_operator_login(operator: schemas.OperatorUpdateLogin, db: Session = Depends(get_db)):
+    operator = crud.update_operator_login(db=db, operator_update=operator)
+    if operator is None:
+        raise HTTPException(status_code=404, detail="It is nothing to update!")
+    return operator
+
+
+@app.post("/operators/update_password", response_model=schemas.OperatorPrivate, tags=["operators"])
+def update_operator_password(operator: schemas.OperatorUpdatePassword, db: Session = Depends(get_db)):
+    operator = crud.update_operator_password(db=db, operator_update=operator)
+    if operator is None:
+        raise HTTPException(status_code=404, detail="It is nothing to update!")
+    return operator
+
+
 @app.post("/operators/delete", tags=["operators"])
 def delete_operator(operator_delete: schemas.OperatorDelete, db: Session = Depends(get_db)):
     res = crud.delete_operator(db=db, operator_delete=operator_delete)
     if res is None:
         raise HTTPException(status_code=404, detail="It is nothing to delete!")
+
+
+@app.post("/operators/delete_list", tags=["operators"])
+def delete_operator_list(operator_delete_list: schemas.OperatorDeleteList, db: Session = Depends(get_db)):
+    crud.delete_operator_list(db=db, operator_delete_list=operator_delete_list)
 
 
 # Hotels API.

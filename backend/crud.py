@@ -24,7 +24,7 @@ def create_operator(db: Session, operator: schemas.OperatorCreate):
 
 
 def update_operator(db: Session, operator_update: schemas.OperatorUpdate):
-    operator = get_operator_by_id(db, operator_update.id)
+    operator = get_operator_by_id(db=db, operator_id=operator_update.id)
     if operator is not None:
         if operator_update.login != "" and len(operator_update.login) <= 20:
             operator.login = operator_update.login
@@ -33,16 +33,45 @@ def update_operator(db: Session, operator_update: schemas.OperatorUpdate):
         db.commit()
         db.refresh(operator)
         return operator
-    return None
+    return operator
+
+
+def update_operator_login(db: Session, operator_update: schemas.OperatorUpdateLogin):
+    operator = get_operator_by_id(db=db, operator_id=operator_update.id)
+    if operator is not None:
+        operator.login = operator_update.login
+        db.commit()
+        db.refresh(operator)
+        return operator
+    return operator 
+
+
+def update_operator_password(db: Session, operator_update: schemas.OperatorUpdatePassword):
+    operator = get_operator_by_id(db=db, operator_id=operator_update.id)
+    if operator is not None:
+        operator.password = operator_update.password
+        db.commit()
+        db.refresh(operator)
+        return operator
+    return operator
 
 
 def delete_operator(db: Session, operator_delete: schemas.OperatorDelete):
-    operator = get_operator_by_id(db, operator_delete.id)
+    operator = get_operator_by_id(db=db, operator_id=operator_delete.id)
     if operator is not None:
         db.delete(operator)
         db.commit()
         return True
     return None
+
+
+def delete_operator_list(db: Session, operator_delete_list: schemas.OperatorDeleteList):
+    for operator_id in operator_delete_list.id:
+        operator = get_operator_by_id(db=db, operator_id=operator_id)
+        if operator is not None:
+            db.delete(operator)
+    db.commit()
+    return
 
 
 # Hotel.
@@ -66,7 +95,7 @@ def create_hotel(db: Session, hotel: schemas.HotelCreate):
     db_hotel = models.Hotel(
         name=hotel.name, luxury=hotel.luxury,
         countryCode=hotel.countryCode
-        )
+    )
     db.add(db_hotel)
     db.commit()
     db.refresh(db_hotel)
@@ -117,13 +146,13 @@ def get_all_tours(db: Session):
 
 
 def create_tour(db: Session, tour: schemas.TourCreate):
-    if get_operator_by_id(db=db, operator_id=tour.operatorId) is not None and\
-        get_hotel_by_id(db=db, hotel_id=tour.hotelId) is not None: 
+    if get_operator_by_id(db=db, operator_id=tour.operatorId) is not None and \
+            get_hotel_by_id(db=db, hotel_id=tour.hotelId) is not None:
         db_tour = models.Tour(
             countryCode=tour.countryCode, tourStart=tour.tourStart,
             tourEnd=tour.tourEnd, priceForTour=tour.priceForTour,
             operatorId=tour.operatorId, hotelId=tour.hotelId
-            )
+        )
         db.add(db_tour)
         db.commit()
         db.refresh(db_tour)
