@@ -31,41 +31,16 @@ class OperatorDelete(BaseModel):
     id: int
 
 
-class OperatorDeleteList(BaseModel):
-    id: list[int]
-
-
 class OperatorPrivate(OperatorBase):
     id: int
     login: str = ""
     password: str = ""
-    # поле для туров?
 
     class Config:
         from_attributes = True
 
 
 class OperatorPublic(OperatorBase):
-    id: int
-
-    # поле для туров?
-
-    class Config:
-        from_attributes = True
-
-
-# HotelRoom.
-class HotelRoomBase(BaseModel):
-    is_free: Optional[bool] = True
-
-
-class HotelRoomCreate(HotelRoomBase):
-    hotel_id: int
-    places: int
-    price_for_day: float
-
-
-class HotelRoom(HotelRoomBase):
     id: int
 
     class Config:
@@ -87,7 +62,6 @@ class HotelUpdate(HotelBase):
     name: Optional[str] = ""
     luxury: Optional[conint(ge=1, le=5)] = 0
     countryCode: Optional[str] = ""
-    rooms: Optional[list[HotelRoom]] = []
 
 
 class HotelDelete(BaseModel):
@@ -98,7 +72,35 @@ class Hotel(HotelBase):
     id: int
     luxury: conint(ge=1, le=5)
     countryCode: str
-    rooms: list[HotelRoom] = []
+
+    class Config:
+        from_attributes = True
+
+
+# HotelRoom.
+class HotelRoomBase(BaseModel):
+    isFree: Optional[bool] = True
+    places: int
+    priceForDay: float
+
+
+class HotelRoomCreate(HotelRoomBase):
+    hotelId: int
+
+
+class HotelRoomUpdate(BaseModel):
+    id: int
+    isFree: Optional[bool] = None
+    places: Optional[int] = None
+    priceForDay: Optional[float] = None
+
+
+class HotelRoomDelete(BaseModel):
+    id: int
+
+
+class HotelRoom(HotelRoomBase):
+    id: int
 
     class Config:
         from_attributes = True
@@ -112,6 +114,7 @@ class TourBase(BaseModel):
     tourEnd: datetime
     operatorId: int
     hotelId: int
+    hotelRoomId: int
 
 
 class TourCreate(TourBase):
@@ -126,6 +129,7 @@ class TourUpdate(BaseModel):
     tourEnd: Optional[datetime] = None
     operatorId: Optional[int] = -1
     hotelId: Optional[int] = -1
+    hotelRoomId: Optional[int] = -1
 
 
 class TourDelete(BaseModel):

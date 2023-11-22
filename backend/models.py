@@ -32,7 +32,8 @@ class Hotel(Base):
     countryCode = Column(String(3), index=True)
     name = Column(String(20), index=True)
 
-    hotelRooms = relationship("HotelRoom", back_populates="room")
+    # cascade - позволяет при удалении отеля удалить и все входящие в него номера.
+    hotelRooms = relationship("HotelRoom", cascade="all,delete", back_populates="room")
     tour = relationship("Tour", back_populates="hotel")
 
 
@@ -47,6 +48,7 @@ class HotelRoom(Base):
     hotelId = Column(Integer, ForeignKey("Hotel.id"))
 
     room = relationship("Hotel", back_populates="hotelRooms")
+    tour = relationship("Tour", back_populates="hotelRoom")
 
 
 class Tour(Base):
@@ -60,6 +62,8 @@ class Tour(Base):
     priceForTour = Column(Integer)
     operatorId = Column(Integer, ForeignKey("Operator.id"))
     hotelId = Column(Integer, ForeignKey("Hotel.id"))
+    hotelRoomId = Column(Integer, ForeignKey("HotelRoom.id"))
 
     operator = relationship("Operator", back_populates="tour")
     hotel = relationship("Hotel", back_populates="tour")
+    hotelRoom = relationship("HotelRoom", back_populates="tour")

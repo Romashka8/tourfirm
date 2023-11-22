@@ -75,11 +75,12 @@ def delete_operator(operator_delete: schemas.OperatorDelete, db: Session = Depen
     res = crud.delete_operator(db=db, operator_delete=operator_delete)
     if res is None:
         raise HTTPException(status_code=404, detail="It is nothing to delete!")
+    return res
 
 
 @app.post("/operators/delete_list", tags=["operators"])
-def delete_operator_list(operator_delete_list: schemas.OperatorDeleteList, db: Session = Depends(get_db)):
-    crud.delete_operator_list(db=db, operator_delete_list=operator_delete_list)
+def delete_operator_list(operator_delete_list: list[schemas.OperatorDelete], db: Session = Depends(get_db)):
+    return crud.delete_operator_list(db=db, operator_delete_list=operator_delete_list)
 
 
 # Hotels API.
@@ -94,7 +95,7 @@ def create_hotel(hotel: schemas.HotelCreate, db: Session = Depends(get_db)):
 
 
 @app.post("/hotels/update", response_model=schemas.Hotel, tags=["hotels"])
-def update_operator(hotel: schemas.HotelUpdate, db: Session = Depends(get_db)):
+def update_hotel(hotel: schemas.HotelUpdate, db: Session = Depends(get_db)):
     hotel = crud.update_hotel(db=db, hotel_update=hotel)
     if hotel is None:
         raise HTTPException(status_code=404, detail="It is nothing to update!")
@@ -108,6 +109,43 @@ def delete_hotel(hotel_delete: schemas.HotelDelete, db: Session = Depends(get_db
         raise HTTPException(status_code=404, detail="It is nothing to delete!")
 
 
+@app.post("/hotels/delete_list", tags=["hotels"])
+def delete_hotel_list(hotel_delete_list: list[schemas.HotelDelete], db: Session = Depends(get_db)):
+    crud.delete_hotel_list(db=db, hotel_delete_list=hotel_delete_list)
+
+
+# Hotel room.
+@app.get("/hotel_rooms/get_all", response_model=list[schemas.HotelRoom], tags=["rooms"])
+def get_all_hotel_rooms(db: Session = Depends(get_db)):
+    return crud.get_all_hotel_rooms(db=db)
+
+
+@app.post("/hotel_rooms/create", response_model=schemas.HotelRoom, tags=["rooms"])
+def create_hotel_room(hotel_room: schemas.HotelRoomCreate, db: Session = Depends(get_db)):
+    print(hotel_room)
+    return crud.create_hotel_room(db=db, hotel_room=hotel_room)
+
+
+@app.post("/hotel_rooms/update", response_model=schemas.HotelRoom, tags=["rooms"])
+def update_hotel_room(hotel_room: schemas.HotelRoomUpdate, db: Session = Depends(get_db)):
+    hotel_room = crud.update_hotel_room(db=db, hotel_room_update=hotel_room)
+    if hotel_room is None:
+        raise HTTPException(status_code=404, detail="It is nothing to update!")
+    return hotel_room
+
+
+@app.post("/hotel_rooms/delete", tags=["rooms"])
+def delete_hotel_room(hotel_room_delete: schemas.HotelRoomDelete, db: Session = Depends(get_db)):
+    res = crud.delete_hotel_room(db=db, hotel_room_delete=hotel_room_delete)
+    if res is None:
+        raise HTTPException(status_code=404, detail="It is nothing to delete!")
+
+
+@app.post("/hotel_rooms/delete_list", tags=["rooms"])
+def delete_hotel_room_list(hotel_room_delete_list: list[schemas.HotelRoomDelete], db: Session = Depends(get_db)):
+    return crud.delete_hotel_room_list(db=db, hotel_room_delete_list=hotel_room_delete_list)
+
+
 # Tours.
 @app.get("/tours/get_all", response_model=list[schemas.Tour], tags=["tours"])
 def get_all_tours(db: Session = Depends(get_db)):
@@ -116,7 +154,10 @@ def get_all_tours(db: Session = Depends(get_db)):
 
 @app.post("/tours/create", response_model=schemas.Tour, tags=["tours"])
 def create_tour(tour: schemas.TourCreate, db: Session = Depends(get_db)):
-    return crud.create_tour(db=db, tour=tour)
+    tour = crud.create_tour(db=db, tour=tour)
+    if tour is None:
+        raise HTTPException(status_code=400, detail="Something wrong with your data! Check hotels and rooms!")
+    return tour
 
 
 @app.post("/tours/update", response_model=schemas.Tour, tags=["tours"])
@@ -132,3 +173,8 @@ def delete_tour(tour_delete: schemas.TourDelete, db: Session = Depends(get_db)):
     res = crud.delete_tour(db=db, tour_delete=tour_delete)
     if res is None:
         raise HTTPException(status_code=404, detail="It is nothing to delete!")
+
+
+@app.post("/tours/delete_list", tags=["tours"])
+def delete_tour_list(tour_delete_list: list[schemas.TourDelete], db: Session = Depends(get_db)):
+    return crud.delete_tour_list(db=db, tour_delete_list=tour_delete_list)

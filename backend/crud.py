@@ -58,20 +58,25 @@ def update_operator_password(db: Session, operator_update: schemas.OperatorUpdat
 
 def delete_operator(db: Session, operator_delete: schemas.OperatorDelete):
     operator = get_operator_by_id(db=db, operator_id=operator_delete.id)
-    if operator is not None:
+    tours = get_tours_by_operator_id(db=db, operator_id=operator_delete.id)
+    if operator is not None and len(tours) == 0:
         db.delete(operator)
         db.commit()
         return True
-    return None
+    return [tour_id.id for tour_id in tours]
 
 
-def delete_operator_list(db: Session, operator_delete_list: schemas.OperatorDeleteList):
-    for operator_id in operator_delete_list.id:
-        operator = get_operator_by_id(db=db, operator_id=operator_id)
-        if operator is not None:
+def delete_operator_list(db: Session, operator_delete_list: list[schemas.OperatorDelete]):
+    tours_table = {}
+    for operator_id in operator_delete_list:
+        operator = get_operator_by_id(db=db, operator_id=operator_id.id)
+        tours = get_tours_by_operator_id(db=db, operator_id=operator_id.id)
+        if operator is not None and tours is None:
             db.delete(operator)
+        else:
+            tours_table[operator_id.id] = [tour_id.id for tour_id in tours]
     db.commit()
-    return
+    return tours_table
 
 
 # Hotel.
@@ -128,6 +133,73 @@ def delete_hotel(db: Session, hotel_delete: schemas.HotelDelete):
     return None
 
 
+def delete_hotel_list(db: Session, hotel_delete_list: list[schemas.OperatorDelete]):
+    for hotel_id in hotel_delete_list:
+        hotel = get_hotel_by_id(db=db, hotel_id=hotel_id.id)
+        if hotel is not None:
+            db.delete(hotel)
+    db.commit()
+
+
+# Hotel room
+def get_hotel_room_by_id(db: Session, hotel_room_id: int):
+    return db.query(models.HotelRoom).filter(models.HotelRoom.id == hotel_room_id).first()
+
+
+def get_hotel_room_by_hotel_id(db: Session, hotel_id: int):
+    return db.query(models.HotelRoom).filter(models.HotelRoom.id == hotel_id).all()
+
+
+def get_all_hotel_rooms(db: Session):
+    return db.query(models.HotelRoom).all()
+
+
+def create_hotel_room(db: Session, hotel_room: schemas.HotelRoomCreate):
+    if get_hotel_by_id(db=db, hotel_id=hotel_room.hotelId) is not None:
+        db_hotel_room = models.HotelRoom(
+            hotelId=hotel_room.hotelId, places=hotel_room.places,
+            priceForDay=hotel_room.priceForDay, isFree=hotel_room.isFree
+        )
+        db.add(db_hotel_room)
+        db.commit()
+        db.refresh(db_hotel_room)
+        print(db_hotel_room)
+        return db_hotel_room
+    return None
+
+
+def update_hotel_room(db: Session, hotel_room_update: schemas.HotelRoomUpdate):
+    db_hotel_room = get_hotel_room_by_id(db=db, hotel_room_id=hotel_room_update.id)
+    if db_hotel_room is not None:
+        if hotel_room_update.isFree is not None:
+            db_hotel_room.isFree = hotel_room_update.isFree
+        if hotel_room_update.places is not None:
+            db_hotel_room.places = hotel_room_update.places
+        if hotel_room_update.priceForDay is not None:
+            db_hotel_room.priceForDay = hotel_room_update.priceForDay
+        db.commit()
+        db.refresh(db_hotel_room)
+        return db_hotel_room
+    return None
+
+
+def delete_hotel_room(db: Session, hotel_room_delete: schemas.HotelRoomDelete):
+    db_hotel_room = get_hotel_room_by_id(db=db, hotel_room_id=hotel_room_delete.id)
+    if db_hotel_room is not None:
+        db.delete(db_hotel_room)
+        db.commit()
+        return True
+    return None
+
+
+def delete_hotel_room_list(db: Session, hotel_room_delete_list: list[schemas.HotelRoomDelete]):
+    for hotel_room_id in hotel_room_delete_list:
+        hotel_room = get_hotel_room_by_id(db=db, hotel_room_id=hotel_room_id.id)
+        if hotel_room is not None:
+            db.delete(hotel_room)
+    db.commit()
+
+
 # Tour.
 def get_tour_by_id(db: Session, tour_id: int):
     return db.query(models.Tour).filter(models.Tour.id == tour_id).first()
@@ -147,15 +219,22 @@ def get_all_tours(db: Session):
 
 def create_tour(db: Session, tour: schemas.TourCreate):
     if get_operator_by_id(db=db, operator_id=tour.operatorId) is not None and \
-            get_hotel_by_id(db=db, hotel_id=tour.hotelId) is not None:
+            get_hotel_by_id(db=db, hotel_id=tour.hotelId) is not None and \
+            (get_hotel_room_by_id(db=db, hotel_room_id=tour.hotelRoomId) is not None and \
+            get_hotel_room_by_id(db=db, hotel_room_id=tour.hotelRoomId).hotelId == tour.hotelId and \
+            get_hotel_room_by_id(db=db, hotel_room_id=tour.hotelRoomId).isFree):
         db_tour = models.Tour(
             countryCode=tour.countryCode, tourStart=tour.tourStart,
             tourEnd=tour.tourEnd, priceForTour=tour.priceForTour,
-            operatorId=tour.operatorId, hotelId=tour.hotelId
+            operatorId=tour.operatorId, hotelId=tour.hotelId,
+            hotelRoomId=tour.hotelRoomId
         )
+        hotel_room_db = get_hotel_room_by_id(db=db, hotel_room_id=tour.hotelRoomId)
+        hotel_room_db.isFree = False
         db.add(db_tour)
         db.commit()
         db.refresh(db_tour)
+        db.refresh(hotel_room_db)
         return db_tour
     return None
 
@@ -175,8 +254,14 @@ def update_tour(db: Session, tour_update: schemas.TourUpdate):
             db_tour.operatorId = tour_update.operatorId
         if get_hotel_by_id(db=db, hotel_id=tour_update.hotelId) is not None:
             db_tour.hotelId = tour_update.hotelId
+        hotel_room_db = get_hotel_room_by_id(db=db, hotel_room_id=tour_update.hotelRoomId)
+        if hotel_room_db is not None and hotel_room_db.hotelId == tour_update.hotelId and hotel_room_db.isFree:
+            db_tour.hotelRoomId = hotel_room_db.id
+            hotel_room_db.isFree = False
         db.commit()
         db.refresh(db_tour)
+        if hotel_room_db is not None:
+            db.refresh(hotel_room_db)
         return db_tour
     return None
 
@@ -184,7 +269,15 @@ def update_tour(db: Session, tour_update: schemas.TourUpdate):
 def delete_tour(db: Session, tour_delete: schemas.TourDelete):
     db_tour = get_tour_by_id(db=db, tour_id=tour_delete.id)
     if db_tour is not None:
+        hotel_room_db = get_hotel_room_by_id(db=db, hotel_room_id=db_tour.hotelRoomId)
+        hotel_room_db.isFree = True
         db.delete(db_tour)
         db.commit()
+        db.refresh(hotel_room_db)
         return True
     return None
+
+
+def delete_tour_list(db: Session, tour_delete_list: list[schemas.TourDelete]):
+    for tour in tour_delete_list:
+        delete_tour(db=db, tour_delete=tour)
