@@ -3,10 +3,16 @@ from typing import Optional
 from datetime import datetime
 
 
+# Login form data.
+class LoginFormData(BaseModel):
+    username: str
+    password: str
+
+
 # Access Token.
 class Token(BaseModel):
     access_token: str
-    token_type: str
+    role: str
 
 
 class TokenData(BaseModel):
