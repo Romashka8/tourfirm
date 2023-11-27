@@ -116,8 +116,6 @@ def update_hotel(db: Session, hotel_update: schemas.HotelUpdate):
             db_hotel.luxury = hotel_update.luxury
         if len(hotel_update.countryCode) != 0:
             db_hotel.countryCode = hotel_update.countryCode
-        if len(hotel_update.rooms) != 0:
-            db_hotel.rooms = hotel_update.rooms
         db.commit()
         db.refresh(db_hotel)
         return db_hotel
