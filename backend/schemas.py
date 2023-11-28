@@ -3,6 +3,38 @@ from typing import Optional
 from datetime import datetime
 
 
+# Login form data.
+class LoginFormData(BaseModel):
+    username: str
+    password: str
+
+
+# Access Token.
+class Token(BaseModel):
+    access_token: str
+    role: str
+    id: int
+
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+
+# Admin.
+class Admin(BaseModel):
+    id: int
+    login: str
+    password: str
+
+    class Config:
+        from_attributes = True
+
+
+class AdminCreate(BaseModel):
+    login: str
+    password: str
+
+
 class OperatorBase(BaseModel):
     login: str
 

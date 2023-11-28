@@ -2,6 +2,25 @@ from sqlalchemy.orm import Session
 import backend.models as models, backend.schemas as schemas
 
 
+# Admin.
+def get_admin_by_id(db: Session, admin_id: int):
+    return db.query(models.Admin).filter(models.Admin.id == admin_id).first()
+
+
+def get_admin_by_login(db: Session, admin_login: str):
+    return db.query(models.Admin).filter(models.Admin.login == admin_login).first()
+
+
+def create_admin(db: Session, admin_create: schemas.Admin):
+    if admin_create is not None and get_admin_by_login(db=db, admin_login=admin_create.login) is None:
+        db_admin = models.Admin(login=admin_create.login, password=admin_create.password)
+        db.add(db_admin)
+        db.commit()
+        db.refresh(db_admin)
+        return db_admin
+    return None
+
+
 # Operator.
 def get_all_operators(db: Session):
     return db.query(models.Operator).all()
