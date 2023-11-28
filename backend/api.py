@@ -64,7 +64,8 @@ def authenticate_user(login: str, password: str, db: Session = Depends(get_db)):
         return (False, False)
     if not verify_password(password, user.password):
         return (False, False)
-    return (user, role)
+    id = user.id
+    return (user, role, id)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -109,7 +110,7 @@ def navigation_route():
 # Авторизация пользователя.
 @app.post("/autorization/token", response_model=schemas.Token, tags=["autorization"])
 def login_for_access_token(form_data: schemas.LoginFormData, db: Session = Depends(get_db)):
-    user, role = authenticate_user(login=form_data.username, password=form_data.password, db=db)
+    user, role, id = authenticate_user(login=form_data.username, password=form_data.password, db=db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -119,7 +120,7 @@ def login_for_access_token(form_data: schemas.LoginFormData, db: Session = Depen
     access_token = create_access_token(
         data={"sub": user.login}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "role": role}
+    return {"access_token": access_token, "role": role, "id": id}
 
 
 # Operator API.
