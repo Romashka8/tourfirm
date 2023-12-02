@@ -236,6 +236,11 @@ def get_all_hotel_rooms(db: Session = Depends(get_db)):
     return crud.get_all_hotel_rooms(db=db)
 
 
+@app.get("/hotel_rooms/get_by_hotel_id", response_model=list[schemas.HotelRoom], tags=["rooms"])
+def get_hotel_rooms_by_hotel_id(hotel_id: int, db: Session = Depends(get_db)):
+    return crud.get_hotel_rooms_by_hotel_id(db=db, hotel_id=hotel_id)
+
+
 @app.post("/hotel_rooms/create", response_model=schemas.HotelRoom, tags=["rooms"])
 def create_hotel_room(hotel_room: schemas.HotelRoomCreate, current_user: Annotated[schemas.Token, Depends(get_current_user)],
         db: Session = Depends(get_db)):
