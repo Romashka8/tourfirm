@@ -164,7 +164,7 @@ def get_hotel_room_by_id(db: Session, hotel_room_id: int):
 
 
 def get_hotel_rooms_by_hotel_id(db: Session, hotel_id: int):
-    return db.query(models.HotelRoom).filter(models.HotelRoom.id == hotel_id).all()
+    return db.query(models.HotelRoom).filter(models.HotelRoom.hotelId == hotel_id).all()
 
 
 def get_all_hotel_rooms(db: Session):
